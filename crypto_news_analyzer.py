@@ -175,3 +175,4 @@ def fetch_news():
 # ========== RUN ==========
 if __name__ == '__main__':
     fetch_news()
+    
