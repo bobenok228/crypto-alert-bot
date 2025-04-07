@@ -10,7 +10,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
-# Replace with your Gist RAW URL
+# Your RAW Gist URL (replace if needed)
 GIST_RAW_URL = "https://gist.githubusercontent.com/bobenok228/22642d47313245c8e005a9d77d14801d/raw/a319a8d2a7114a5be244cf4bce9340e7b9d5b7d4/sent_headlines.txt"
 
 openai.api_key = OPENAI_API_KEY
@@ -36,9 +36,9 @@ def save_sent_headline(title):
         if response.status_code != 200:
             print("⚠️ Cannot update Gist: fetch failed.")
             return
-        current = response.text.strip() + f"\n{title}"
+        current = response.text.strip() + f"\n{title.strip().lower()}"
 
-        # Convert RAW to PATCH endpoint
+        # PATCH endpoint
         patch_url = GIST_RAW_URL.replace("/raw/", "/").split("/gist.githubusercontent.com/")[1]
         patch_url = f"https://api.github.com/gists/{patch_url.split('/')[1]}"
 
@@ -175,4 +175,4 @@ def fetch_news():
 # ========== RUN ==========
 if __name__ == '__main__':
     fetch_news()
-    
+
