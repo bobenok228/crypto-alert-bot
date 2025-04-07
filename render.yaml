@@ -1,0 +1,9 @@
+services:
+  - type: cron
+    name: crypto-news-alert
+    runtime: python
+    repo: https://github.com/bobenok228/crypto-alert-bot
+    schedule: '*/15 * * * *'
+    plan: free
+    buildCommand: ""
+    startCommand: python crypto_news_analyzer.py
