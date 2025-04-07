@@ -13,7 +13,6 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 # Replace with your Gist RAW URL
 GIST_RAW_URL = "https://gist.githubusercontent.com/bobenok228/22642d47313245c8e005a9d77d14801d/raw/a319a8d2a7114a5be244cf4bce9340e7b9d5b7d4/sent_headlines.txt"
 
-# ========== INIT ==========
 openai.api_key = OPENAI_API_KEY
 NEWS_ENDPOINT = 'https://newsapi.org/v2/top-headlines'
 EVALUATED_HEADLINES = set()
@@ -23,7 +22,7 @@ def load_sent_headlines():
     try:
         response = requests.get(GIST_RAW_URL, timeout=10)
         if response.status_code == 200:
-            return set(line.strip() for line in response.text.splitlines())
+            return set(line.strip().lower() for line in response.text.splitlines())
         else:
             print("⚠️ Failed to fetch Gist:", response.status_code)
             return set()
@@ -33,7 +32,6 @@ def load_sent_headlines():
 
 def save_sent_headline(title):
     try:
-        # Fetch current content
         response = requests.get(GIST_RAW_URL, timeout=10)
         if response.status_code != 200:
             print("⚠️ Cannot update Gist: fetch failed.")
@@ -143,32 +141,33 @@ def fetch_news():
 
     for article in articles:
         title = article['title']
+        clean_title = title.strip().lower()
+
+        if clean_title in EVALUATED_HEADLINES or clean_title in SENT_HEADLINES:
+            print("🔁 Skipped duplicate headline:", title)
+            continue
+
+        EVALUATED_HEADLINES.add(clean_title)
+
         published_at_raw = article.get('publishedAt', '')
         published_at = "Unknown time"
-
         try:
             dt = datetime.strptime(published_at_raw, "%Y-%m-%dT%H:%M:%SZ")
             published_at = dt.strftime("%Y-%m-%d %H:%M UTC")
         except:
             pass
 
-        if title in EVALUATED_HEADLINES or title in SENT_HEADLINES:
-            print("🔁 Skipped duplicate headline:", title)
-            continue
-
-        EVALUATED_HEADLINES.add(title)
-
-        if any(keyword.lower() in title.lower() for keyword in KEYWORDS):
+        if any(keyword.lower() in clean_title for keyword in KEYWORDS):
             direction, confidence, explanation = analyze_event_ai(title)
             message = format_result(title, direction, confidence, explanation, published_at)
 
             if direction in ["up", "down"] and confidence >= 65:
                 send_telegram_message(message)
-                save_sent_headline(title)
+                save_sent_headline(clean_title)
                 print("✅ Alert sent to Telegram:", title)
-            elif any(word in title.lower() for word in FORCE_REVIEW) and confidence >= 60 and direction != "neutral":
+            elif any(word in clean_title for word in FORCE_REVIEW) and confidence >= 60 and direction != "neutral":
                 send_telegram_message(message)
-                save_sent_headline(title)
+                save_sent_headline(clean_title)
                 print("⚠️ Forced alert (special topic):", title)
             else:
                 print("ℹ️ Skipped (low confidence or neutral):", title)
