@@ -1,7 +1,6 @@
 import os
 import requests
 import openai
-import time
 from datetime import datetime
 
 # ========== CONFIGURATION ==========
@@ -83,6 +82,8 @@ def format_result(event_text, direction, confidence, explanation, published_at):
 
 # ========== FETCH & ANALYZE ==========
 def fetch_news():
+    print("✅ Script started: fetching news...")  # Debug line
+
     KEYWORDS = ['bitcoin', 'crypto', 'ethereum', 'SEC', 'inflation', 'interest rate', 'Trump', 'ETF', 'Binance', 'lawsuit', 'regulation', 'hacked', 'halving', 'adoption', 'crackdown', 'tariff', 'federal reserve', 'usd', 'recession']
     FORCE_REVIEW = ['trump', 'protest', 'unrest', 'clash', 'musk', 'riot', 'chaos', 'emergency', 'conflict']
 
@@ -140,6 +141,6 @@ def fetch_news():
             else:
                 print("ℹ️ Skipped (low confidence or neutral):", title)
 
-# ========== LOOP FOR LOCAL TESTING ==========
+# ========== ENTRY POINT ==========
 if __name__ == '__main__':
     fetch_news()
